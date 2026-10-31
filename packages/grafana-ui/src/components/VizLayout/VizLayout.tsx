@@ -68,14 +68,14 @@ export const VizLayout: VizLayoutComponentType = ({ width, height, legend, child
       containerStyle.flexDirection = 'column';
       legendStyle.maxHeight = maxHeight;
 
-      if (legendMeasure) {
+      if (legendMeasure.height) {
         size = { width, height: height - legendMeasure.height };
       }
       break;
     case 'right':
       containerStyle.flexDirection = 'row';
 
-      if (legendMeasure) {
+      if (legendMeasure.width) {
         size = { width: width - legendMeasure.width, height };
       }
 
