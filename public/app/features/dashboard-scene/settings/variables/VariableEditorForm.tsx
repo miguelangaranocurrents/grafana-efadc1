@@ -189,7 +189,8 @@ export function VariableEditorForm({
 
       {EditorToRender && <EditorToRender variable={variable} onRunQuery={onRunQuery} />}
 
-      {isHasVariableOptions && <VariableValuesPreview options={options} staticOptions={staticOptions} />}
+      {/* hide stale options while a re-run (e.g. after a regex change) is in flight */}
+      {isHasVariableOptions && !runQueryState.loading && <VariableValuesPreview options={options} staticOptions={staticOptions} />}
 
       <div className={styles.buttonContainer}>
         <Stack gap={2}>
