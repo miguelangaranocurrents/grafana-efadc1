@@ -1,7 +1,7 @@
 import { css } from '@emotion/css';
-import { type FormEvent, useCallback, useState } from 'react';
+import { type FormEvent, useCallback, useRef, useState } from 'react';
 import { useAsyncFn } from 'react-use';
-import { lastValueFrom } from 'rxjs';
+import { type Unsubscribable } from 'rxjs';
 
 import { type GrafanaTheme2, type SelectableValue } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
@@ -72,8 +72,14 @@ export function VariableEditorForm({
   const [nameWarning, setNameWarning] = useState<string>();
   const { name, type, label, description, hide: display } = variable.useState();
   const EditorToRender = isEditableVariableType(type) ? getVariableEditor(type) : undefined;
-  const [runQueryState, onRunQuery] = useAsyncFn(async () => {
-    await lastValueFrom(variable.validateAndUpdate!());
+  const runQuerySubscription = useRef<Unsubscribable | undefined>(undefined);
+  const [runQueryState, onRunQuery] = useAsyncFn(() => {
+    // Only the latest run may update the variable: an earlier run that started before e.g. the regex
+    // changed could otherwise resolve last and overwrite the options with stale results.
+    runQuerySubscription.current?.unsubscribe();
+    return new Promise<void>((resolve, reject) => {
+      runQuerySubscription.current = variable.validateAndUpdate!().subscribe({ error: reject, complete: resolve });
+    });
   }, [variable]);
   const onVariableTypeChange = (option: SelectableValue<EditableVariableType>) => {
     if (option.value) {
