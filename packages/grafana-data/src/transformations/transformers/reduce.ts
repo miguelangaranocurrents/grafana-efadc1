@@ -162,7 +162,9 @@ function reduceSeriesToRows(
         // reducing a text field yields its raw string value (e.g. lastNotNull of "200"), so a column
         // guessed as numeric can still hold numeric strings that would break range/threshold math
         if (f.type === FieldType.number) {
-          f.values = f.values.map((v) => (typeof v === 'string' ? Number(v) : v));
+          f.values = f.values.map((v) =>
+            typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v)) ? Number(v) : v
+          );
         }
       }
     }
